@@ -1,15 +1,15 @@
 package com.room.core;
 
-public class Room implements IRoom<Message> {
+public class Room implements IRoom {
 
-	private static int globalId = 100000;
+	private static int globalId = 0;
 	private int id = 0;
 	
 	volatile ERoomStatus eRoomStatus = ERoomStatus.PREPARE;
 	
-	ISafeQueue<Message> messageQueue = null;
+	ISafeQueue<Message> messageQueue = new SafeQueue<Message>();
 	
-	IConsumerMessage<Message> consumerMessage = null;
+	IConsumeMessage<Message> consumerMessage = new ConsumeMessage();
 	
 	public Room() {
 		this.id = (++globalId);

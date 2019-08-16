@@ -1,6 +1,6 @@
 package com.room.core;
 
-public interface IConsumerMessage<T> {
+public interface IConsumeMessage<T> {
 
 	void apply(T t);
 }

@@ -6,13 +6,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public abstract class IRoomManager<T> {
+public abstract class IRoomManager {
 
 	/** 房间的创建和销毁由此线程单独处理*/
-	private Map<Integer, IRoom<T>> allRoom = new HashMap<Integer, IRoom<T>>();
+	private Map<Integer, IRoom> allRoom = new HashMap<Integer, IRoom>();
 	
 	/** 安全队列*/
-	private ISafeQueue<IRoom<T>> safeRoom = null;
+	private ISafeQueue<IRoom> safeRoom = new SafeQueue<IRoom>();
 	
 	/** 上一帧的时间*/
 	private long prevFrameTime = 0L;
@@ -21,23 +21,29 @@ public abstract class IRoomManager<T> {
 	 * 创建房间
 	 * @return
 	 */
-	public abstract IRoom<?> create();
+	public void createRoom() {
+		IRoom room = new Room();
+		
+		allRoom.put(room.getId(), room);
+	}
 	
 	
-	public abstract T generateMessage();
+	public abstract Message generateMessage();
 	
 	/**
 	 * 模拟接收消息
 	 */
 	public void receiveMessage() {
-		int messageCount = (int) (Math.random() % 100);
+		int messageCount = (int) (Math.random() * 100);
 		for (int i=0; i<messageCount; ++i) {
-			T message = generateMessage();
+			Message message = generateMessage();
 			
-			int roomId = (int) (Math.random() % 100);
+			int roomId = (int) (Math.random() * 100);
 			// 根据逻辑将不同的消息分配到不同的房间
-			IRoom<T> room = (IRoom<T>)getRoom(roomId);
-			room.addMessage(message);
+			IRoom room = (IRoom)getRoom(roomId);
+			if (null != room) {
+				room.addMessage(message);
+			}
 		}
 	}
 	
@@ -47,7 +53,7 @@ public abstract class IRoomManager<T> {
 	 */
 	public void startMultiThread(int count) {
 		for (int i=0; i<count; ++i) {
-			Thread thread = new Thread(new WorkThread());
+			Thread thread = new Thread(new WorkThread(this));
 			thread.start();
 		}
 	}
@@ -73,19 +79,20 @@ public abstract class IRoomManager<T> {
 	 */
 	public void pulseFrame(long now) {
 		// 销毁处于ERoomStatus.DESTROY状态的的room
-		Iterator<Map.Entry<Integer, IRoom<T>>> iter = allRoom.entrySet().iterator();
+		Iterator<Map.Entry<Integer, IRoom>> iter = allRoom.entrySet().iterator();
 		while (iter.hasNext()) {
-			Map.Entry<Integer, IRoom<T>> entry = iter.next();
-			IRoom<T> room = entry.getValue();
+			Map.Entry<Integer, IRoom> entry = iter.next();
+			IRoom room = entry.getValue();
 			if (room.getStatus() == ERoomStatus.DESTROY) {
 				iter.remove();
 			}
 		}
 		
 		// 计算处于ERoomStatus.WAITING状态的Room
-		List<IRoom<T>> allWaitingRoom = new LinkedList<>();
-		for (IRoom<T> room : allRoom.values()) {
-			if (room.getStatus() == ERoomStatus.WAITING) {
+		List<IRoom> allWaitingRoom = new LinkedList<>();
+		for (IRoom room : allRoom.values()) {
+			if (room.getStatus() == ERoomStatus.WAITING
+					|| room.getStatus() == ERoomStatus.PREPARE) {
 				room.changeStatus(ERoomStatus.READY);
 				allWaitingRoom.add(room);
 			}
@@ -99,7 +106,7 @@ public abstract class IRoomManager<T> {
 	 * 返回一个线程可以执行Room
 	 * @return
 	 */
-	public IRoom<T> popThreadRoom() {
+	public IRoom popThreadRoom() {
 		return safeRoom.pop();
 	}
 	
@@ -108,8 +115,8 @@ public abstract class IRoomManager<T> {
 	 * @param id
 	 * @return
 	 */
-	private IRoom<T> getRoom(int id) {
-		IRoom<T> room = allRoom.get(id);
+	private IRoom getRoom(int id) {
+		IRoom room = allRoom.get(id);
 		return room;
 	}
 	

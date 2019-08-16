@@ -1,6 +1,6 @@
 package com.room.core;
 
-public interface IRoom<T> {
+public interface IRoom {
 
 	/**
 	 * 房间id
@@ -25,7 +25,7 @@ public interface IRoom<T> {
 	 * @param <T>
 	 * @param t
 	 */
-	void addMessage(T t);
+	void addMessage(Message t);
 	
 	
 	/**
