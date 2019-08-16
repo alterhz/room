@@ -8,7 +8,7 @@ public class ConsumeMessage implements IConsumeMessage<Message> {
 	public void apply(Message t) {
 		++count;
 		
-		if (count % 10000 == 0) {
+		if (count % 1000 == 0) {
 			System.out.println("消费消息：" + count);
 		}
 		
