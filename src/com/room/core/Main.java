@@ -7,8 +7,10 @@ public class Main {
 		
 		MsgRoomManager msgRoomManager = new MsgRoomManager();
 		
+		// 启动10个线程 
 		msgRoomManager.startMultiThread(10);
 		
+		// 创建100个房间
 		for (int i=0; i<100; ++i) {
 			msgRoomManager.createRoom();
 		}

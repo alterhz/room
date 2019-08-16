@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SafeQueue<T> implements ISafeQueue<T> {
 
-private ConcurrentLinkedQueue<T> messageQueue = new ConcurrentLinkedQueue<T>();
+	private ConcurrentLinkedQueue<T> messageQueue = new ConcurrentLinkedQueue<T>();
 	
 	@Override
 	public T pop() {
