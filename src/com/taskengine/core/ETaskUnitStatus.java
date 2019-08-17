@@ -1,6 +1,6 @@
-package com.room.core;
+package com.taskengine.core;
 
-public enum ERoomStatus {
+public enum ETaskUnitStatus {
 	/** 新创建的默认状态，未曾添加到线程执行队列*/
 	PREPARE,
 	/** 就绪状态：随时可以被线程执行*/
@@ -9,6 +9,8 @@ public enum ERoomStatus {
 	RUNNING,
 	/** 等待状态：运行过的处于等待状态*/
 	WAITING,
+	/** 标记删除*/
+	MARK_DESTROY,
 	/** 待销毁状态：等待销毁*/
 	DESTROY,
 }
