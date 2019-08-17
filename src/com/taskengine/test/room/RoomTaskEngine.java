@@ -1,10 +1,10 @@
-package com.taskengine.test;
+package com.taskengine.test.room;
 
 import com.taskengine.core.ITask;
 import com.taskengine.core.ITaskEngine;
 import com.taskengine.core.ITaskUnit;
 
-public class MockTaskEngine extends ITaskEngine {
+public class RoomTaskEngine extends ITaskEngine {
 	
 	/**
 	 * 模拟生成Task

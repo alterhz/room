@@ -33,6 +33,11 @@ public class TaskUnit implements ITaskUnit {
 	@Override
 	public EPulseResult pulse(long now) {
 		
+		// 将当前执行器设置为销毁状态
+		if (ETaskUnitStatus.MARK_DESTROY == eTaskUnitStatus) {
+			changeStatus(ETaskUnitStatus.DESTROY);
+		}
+		
 		for (int i=0; i<FinalConfig.INSTANCE.ONE_PULSE_CONSUME_MESSAGE_COUNT; ++i) {
 			ITask task = tasks.poll();
 			if (null == task) {

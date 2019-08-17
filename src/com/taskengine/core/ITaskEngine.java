@@ -1,7 +1,6 @@
 package com.taskengine.core;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -41,11 +40,12 @@ public abstract class ITaskEngine {
 	 * @param taskUnit
 	 */
 	public void removeTaskUnit(ITaskUnit taskUnit) {
+		if (ETaskUnitStatus.MARK_DESTROY == taskUnit.getStatus()) {
+			return ;
+		}
+		
 		taskUnit.changeStatus(ETaskUnitStatus.MARK_DESTROY);
 	}
-	
-	
-	
 	
 	/**
 	 * 启动多个线程
@@ -76,25 +76,18 @@ public abstract class ITaskEngine {
 	 * @param now
 	 */
 	public void pulseFrame(long now) {
-		// 销毁处于ERoomStatus.DESTROY状态的的room
-		Iterator<Map.Entry<Integer, ITaskUnit>> iter = allTaskUnit.entrySet().iterator();
-		while (iter.hasNext()) {
-			Map.Entry<Integer, ITaskUnit> entry = iter.next();
-			ITaskUnit room = entry.getValue();
-			if (room.getStatus() == ETaskUnitStatus.DESTROY) {
-				iter.remove();
-				
-				// 从下一帧执行队列移除
-				nextFrameTaskUnits.remove(room);
-			}
-		}
-		
 		// 将下一帧的TaskUnit全部添加到当前帧
 		int count = nextFrameTaskUnits.size();
 		for (int i=0; i<count; ++i) {
 			ITaskUnit taskUnit = nextFrameTaskUnits.poll();
 			if (null == taskUnit) {
 				break;
+			}
+			
+			// 移除销毁状态的TaskUnit
+			if (ETaskUnitStatus.DESTROY == taskUnit.getStatus()) {
+				allTaskUnit.remove(taskUnit.getId());
+				continue;
 			}
 			
 			curFrameTaskUnits.add(taskUnit);
