@@ -1,13 +1,13 @@
 package com.taskengine.core;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public abstract class ITaskEngine {
+public abstract class ITaskEngine implements Runnable {
 
-	/** 房间的创建和销毁由此线程单独处理*/
-	private Map<Integer, ITaskUnit> allTaskUnit = new HashMap<Integer, ITaskUnit>();
+	/** 线程安全队列，房间的创建和销毁由此线程单独处理*/
+	private Map<Integer, ITaskUnit> allTaskUnit = new ConcurrentHashMap<Integer, ITaskUnit>();
 	
 	/** 当前帧正在执行的任务单元列表*/
 	private ConcurrentLinkedQueue<ITaskUnit> curFrameTaskUnits = new ConcurrentLinkedQueue<ITaskUnit>();
@@ -17,6 +17,43 @@ public abstract class ITaskEngine {
 	
 	/** 上一帧的时间*/
 	private long prevFrameTime = 0L;
+	
+	/** 运行状态*/
+	boolean running = false;
+	
+	/**
+	 * 启动TaskEngine
+	 * @param taskEngine
+	 */
+	public void start(int taskExecutorThreadNum) {
+		if (running) {
+			throw new RuntimeException("ITaskEngine重复启动");
+		}
+		
+		running = true;
+		
+		Thread thread = new Thread(this);
+		thread.start();
+		
+		startMultiThread(taskExecutorThreadNum);
+	}
+	
+	@Override
+	public void run() {
+		// 开始pulse循环
+		while (running) {
+			long now = System.currentTimeMillis();
+			
+			pulse(now);
+			
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 	
 	/**
 	 * 添加任务单元
@@ -49,13 +86,28 @@ public abstract class ITaskEngine {
 	
 	/**
 	 * 启动多个线程
-	 * @param count
+	 * @param threadNum
 	 */
-	public void startMultiThread(int count) {
-		for (int i=0; i<count; ++i) {
+	public void startMultiThread(int threadNum) {
+		for (int i=0; i<threadNum; ++i) {
 			Thread thread = new Thread(new TaskExecutor(this));
 			thread.start();
 		}
+	}
+	
+	/**
+	 * 投递Task
+	 * @param taskUnitId
+	 * @param task
+	 */
+	public boolean postTask(int taskUnitId, ITask task) {
+		ITaskUnit taskUnit = getUnitTask(taskUnitId);
+		if (null == taskUnit) {
+			return false;
+		}
+		
+		taskUnit.postTask(task);
+		return true;
 	}
 	
 	/**
@@ -92,21 +144,6 @@ public abstract class ITaskEngine {
 			
 			curFrameTaskUnits.add(taskUnit);
 		}
-		
-		// TaskUnit分配算法1
-//		// 计算处于ERoomStatus.WAITING状态的Room
-//		List<ITaskUnit> allWaitingRoom = new LinkedList<>();
-//		for (ITaskUnit room : allRoom.values()) {
-//			if (room.getStatus() == ETaskUnitStatus.WAITING
-//					|| room.getStatus() == ETaskUnitStatus.PREPARE) {
-//				room.changeStatus(ETaskUnitStatus.READY);
-//				allWaitingRoom.add(room);
-//			}
-//		}
-//		
-//		// 将所有readRoom追加到执行队列
-//		executingTaskUnits.addAll(allWaitingRoom);
-		
 	}
 	
 	/**
