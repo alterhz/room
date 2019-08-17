@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public abstract class ITaskEngine implements Runnable {
+public abstract class TaskEngine implements Runnable {
 
 	/** 线程安全队列，房间的创建和销毁由此线程单独处理*/
 	private Map<Integer, ITaskUnit> allTaskUnit = new ConcurrentHashMap<Integer, ITaskUnit>();

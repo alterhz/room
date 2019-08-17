@@ -8,9 +8,9 @@ public class TaskExecutor implements Runnable {
 
 	boolean running = true;
 	
-	private final ITaskEngine taskEngine;
+	private final TaskEngine taskEngine;
 	
-	public TaskExecutor(ITaskEngine taskUnitManager) {
+	public TaskExecutor(TaskEngine taskUnitManager) {
 		this.taskEngine = taskUnitManager;
 	}
 	
