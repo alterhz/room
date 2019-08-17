@@ -42,7 +42,8 @@ public class TaskExecutor implements Runnable {
 					|| EPulseResult.EXECUTE_ALL == ePulseResult) {
 				// 所有数据已经执行完毕，添加到下一帧执行列表
 				taskEngine.addTaskUnitToNextFrame(taskUnit);
-			} else if (EPulseResult.EXECUTE_PART_OF_ALL == ePulseResult) {
+			} else if (EPulseResult.EXECUTE_PART_OF_ALL == ePulseResult
+					|| EPulseResult.EXECUTE_OUT_OF_TIME == ePulseResult) {
 				// 执行单元还有数据未执行完毕，将taskUnit压入当前帧执行列表，当前帧继续执行一次
 				taskEngine.addTaskUnitToCurFrame(taskUnit);
 			}

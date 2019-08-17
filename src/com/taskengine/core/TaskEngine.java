@@ -4,8 +4,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public abstract class TaskEngine implements Runnable {
+public final class TaskEngine implements Runnable {
 
+	/** 线程安全队列，房间的创建和销毁由此线程单独处理*/
+	private static Map<String, TaskEngine> allTaskEngine = new ConcurrentHashMap<String, TaskEngine>();
+	
+	/** 名称*/
+	private final String name;
+	
 	/** 线程安全队列，房间的创建和销毁由此线程单独处理*/
 	private Map<Integer, ITaskUnit> allTaskUnit = new ConcurrentHashMap<Integer, ITaskUnit>();
 	
@@ -20,6 +26,45 @@ public abstract class TaskEngine implements Runnable {
 	
 	/** 运行状态*/
 	boolean running = false;
+	
+	public TaskEngine(String name) {
+		this.name = name;
+	}
+	
+	private static final TaskEngine defaultEngine = new TaskEngine("default");
+	
+	/**
+	 * 默认TaskEngine
+	 * @return
+	 */
+	public static TaskEngine getDefault() {
+		return defaultEngine;
+	}
+	
+	/**
+	 * 创建一个TaskEngine
+	 * @param name
+	 * @return
+	 */
+	public static TaskEngine buildTaskEngine(String name) {
+		synchronized (name) {
+			TaskEngine newTaskEngine = new TaskEngine(name);
+			
+			allTaskEngine.putIfAbsent(name, newTaskEngine);
+			
+			return newTaskEngine;
+		}
+	}
+	
+	/**
+	 * 获取TaskEngine
+	 * @param name
+	 * @return
+	 */
+	public static TaskEngine getTaskEngine(String name) {
+		TaskEngine taskEngine = allTaskEngine.get(name);
+		return taskEngine;
+	}
 	
 	/**
 	 * 启动TaskEngine
@@ -178,6 +223,10 @@ public abstract class TaskEngine implements Runnable {
 	public ITaskUnit getUnitTask(int id) {
 		ITaskUnit room = allTaskUnit.get(id);
 		return room;
+	}
+
+	public String getName() {
+		return name;
 	}
 	
 }

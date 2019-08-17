@@ -11,5 +11,7 @@ public enum EPulseResult {
 	EXECUTE_ALL,
 	/** 执行了部分，仍然剩余Task未执行完*/
 	EXECUTE_PART_OF_ALL,
+	/** 执行了部分，已经超时单次执行最大时间*/
+	EXECUTE_OUT_OF_TIME,
 	;
 }
