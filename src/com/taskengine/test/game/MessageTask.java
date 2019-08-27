@@ -7,7 +7,6 @@ public class MessageTask implements ITask {
 
 	@Override
 	public void run(ITaskUnit taskUnit) {
-		// TODO Auto-generated method stub
 
 	}
 
